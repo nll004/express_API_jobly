@@ -54,7 +54,7 @@ router.get("/", async function (req, res, next) {
   try {
     const {name, min_emp, max_emp } = req.query;
 
-    const companies = await Company.find(name, min_emp, max_emp)
+    const companies = await Company.find(name, min_emp, max_emp)// if undefined it uses default vals
     return res.json({companies})
   }
   catch (err) {

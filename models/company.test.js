@@ -82,9 +82,9 @@ describe("get", function () {
 
 /************************************** find */
 
-describe("find all companies", function () {
+describe("find all companies with no args", function () {
   test("works: no filter", async function () {
-    let companies = await Company.find();
+    let companies = await Company.find(undefined);
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -112,7 +112,7 @@ describe("find all companies", function () {
 });
 
 describe('search companies by partial name and/or employee count',  function () {
-  test('find all companies with search string in name', async function() {
+  test('find any companies: filter by name string', async function() {
     const result = await Company.find('c');
     expect(result).toEqual(
       expect.arrayContaining([
@@ -121,7 +121,7 @@ describe('search companies by partial name and/or employee count',  function () 
         expect.objectContaining({name: "C3"}),
       ]));
   })
-  test('find all companies >= min num employees', async function() {
+  test('find any companies: filter by min num of employees', async function() {
     const result = await Company.find(undefined, 1);
     expect(result).toEqual(
       expect.arrayContaining([
@@ -131,7 +131,7 @@ describe('search companies by partial name and/or employee count',  function () 
       ])
     )
   })
-  test('find all companies with range of employees', async function() {
+  test('find any companies: filter by range of employees', async function() {
     const result = await Company.find(undefined, 1, 2);
     expect(result).toEqual(
       expect.arrayContaining([
@@ -140,7 +140,7 @@ describe('search companies by partial name and/or employee count',  function () 
       ])
     )
   })
-  test('find all companies with <= num of employees', async function() {
+  test('find any companies: filter by < max num of employees', async function() {
     const result = await Company.find(undefined, undefined, 2);
     expect(result).toEqual(
       expect.arrayContaining([
@@ -149,7 +149,7 @@ describe('search companies by partial name and/or employee count',  function () 
       ])
     )
   })
-  test('find all companies with "c" in name and range of 2-3 employees', async function() {
+  test('find any companies: filter by combined name and employee range', async function() {
     const result = await Company.find('c', 2, 3);
     expect(result).toEqual(
       expect.arrayContaining([
@@ -158,9 +158,22 @@ describe('search companies by partial name and/or employee count',  function () 
       ])
     )
   })
-  // error if min is > max param
-  // error if no companies found?
-
+  test('throw error if min employee val > max employee val', async function(){
+    try{
+      await Company.find('', 5, 3);
+      fail();
+    } catch(err){
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  })
+  test('throw error if no results are found with search criteria', async function(){
+    try{
+      await Company.find('d');
+      fail();
+    } catch(err){
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
 })
 
 /************************************** update */

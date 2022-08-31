@@ -11,15 +11,16 @@ describe('unittest for sqlForPartialUpdate function', function() {
             { setCols: '"num_employees"=$1, "logo_url"=$2',
               values: [ 106, 'https://google.com' ] });
     });
-    test('additional key arg should not affect returned data', function(){
+    test('extra values in jsToSql arg should not affect returned data', function(){
         const result = sqlFunc(
             { numEmployees: 9034 },
             { numEmployees: "num_employees", logoUrl: "logo_url" }
         );
         expect(result).toEqual({setCols: '"num_employees"=$1', values: [ 9034 ]});
     });
-    test('no keys passed to function results in error', function(){
-        expect(() => sqlFunc({}, {numEmployees: "num_employees"})).toThrow(BadRequestError);
+    test('missing dataToUpdate arg results in error', function(){
+        expect(() => sqlFunc({}, {numEmployees: "num_employees"}))
+            .toThrow(BadRequestError);
     })
 })
 

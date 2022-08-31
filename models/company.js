@@ -65,14 +65,18 @@ class Company {
    *
    * Params: If no parameters are passed, defaults retrieve all companies
    *
-   * > name: partial or full name string to search by. Default is ''
+   * > name: case insensitive string to search company names. Default value is ''
    *
-   * > minEmploy: search value for minumum employess in company. Default is 1 employee
+   * > minEmploy: search value for minumum number of employees in company. Default is 1
    *
-   * > maxEmploy: max number of employees in company. Default is max postgres integer
+   * > maxEmploy: search value for max number of employees in company. Default is max postgresql integer val
    */
 
   static async find(name='', minEmploy=1, maxEmploy=2147483647){
+    if(minEmploy > maxEmploy){
+      throw new BadRequestError('Min employee value is set greater than max');
+    }
+
     const result = await db.query(`
                     SELECT  handle,
                             name,
@@ -84,6 +88,9 @@ class Company {
                     AND num_employees BETWEEN $2 AND $3`,
                     [`%${name}%`, `${minEmploy}`, `${maxEmploy}`]);
 
+    if (result.rows.length === 0){
+      throw new NotFoundError('No results found. Try changing your search criteria.')
+    }
     return result.rows
   }
 

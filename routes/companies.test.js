@@ -66,8 +66,8 @@ describe("POST /companies", function () {
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
-  test("ok for anon", async function () {
-    const resp = await request(app).get("/companies");
+  test("invalid query string does not affect company search", async function () {
+    const resp = await request(app).get("/companies?invalid='query'");
     expect(resp.body).toEqual({
       companies:
           [
@@ -94,6 +94,23 @@ describe("GET /companies", function () {
             },
           ],
     });
+  });
+  test("search filter works as intended", async function () {
+    const resp = await request(app).get("/companies?name=1&min_emp=1&max_emp=2");
+    expect(resp.body).toEqual({
+      companies:
+          [{
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            }],
+    });
+  });
+  test("invalid query value type throws serverError", async function () {
+    const resp = await request(app).get("/companies?name=1&min_emp='1'&max_emp=2");
+    expect(resp.statusCode).toEqual(500);
   });
 
   test("fails: test next() handler", async function () {
