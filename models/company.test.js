@@ -56,11 +56,35 @@ describe("create", function () {
   });
 });
 
-/************************************** findAll */
+/************************************** get */
 
-describe("findAll", function () {
+describe("get", function () {
+  test("works", async function () {
+    let company = await Company.get("c1");
+    expect(company).toEqual({
+      handle: "c1",
+      name: "C1",
+      description: "Desc1",
+      numEmployees: 1,
+      logoUrl: "http://c1.img",
+    });
+  });
+
+  test("not found if no such company", async function () {
+    try {
+      await Company.get("nope");
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
+/************************************** find */
+
+describe("find all companies", function () {
   test("works: no filter", async function () {
-    let companies = await Company.findAll();
+    let companies = await Company.find();
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -87,29 +111,57 @@ describe("findAll", function () {
   });
 });
 
-/************************************** get */
+describe('search companies by partial name and/or employee count',  function () {
+  test('find all companies with search string in name', async function() {
+    const result = await Company.find('c');
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({name: "C1"}),
+        expect.objectContaining({name: "C2"}),
+        expect.objectContaining({name: "C3"}),
+      ]));
+  })
+  test('find all companies >= min num employees', async function() {
+    const result = await Company.find(undefined, 1);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({name: "C1"}),
+        expect.objectContaining({name: "C2"}),
+        expect.objectContaining({name: "C3"})
+      ])
+    )
+  })
+  test('find all companies with range of employees', async function() {
+    const result = await Company.find(undefined, 1, 2);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({name: "C1"}),
+        expect.objectContaining({name: "C2"})
+      ])
+    )
+  })
+  test('find all companies with <= num of employees', async function() {
+    const result = await Company.find(undefined, undefined, 2);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({name: "C1"}),
+        expect.objectContaining({name: "C2"})
+      ])
+    )
+  })
+  test('find all companies with "c" in name and range of 2-3 employees', async function() {
+    const result = await Company.find('c', 2, 3);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({name: "C2"}),
+        expect.objectContaining({name: "C3"})
+      ])
+    )
+  })
+  // error if min is > max param
+  // error if no companies found?
 
-describe("get", function () {
-  test("works", async function () {
-    let company = await Company.get("c1");
-    expect(company).toEqual({
-      handle: "c1",
-      name: "C1",
-      description: "Desc1",
-      numEmployees: 1,
-      logoUrl: "http://c1.img",
-    });
-  });
-
-  test("not found if no such company", async function () {
-    try {
-      await Company.get("nope");
-      fail();
-    } catch (err) {
-      expect(err instanceof NotFoundError).toBeTruthy();
-    }
-  });
-});
+})
 
 /************************************** update */
 

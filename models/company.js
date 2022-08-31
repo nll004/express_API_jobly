@@ -61,6 +61,32 @@ class Company {
     return companiesRes.rows;
   }
 
+  /** Search for companies by name and/or by employee count
+   *
+   * Params: If no parameters are passed, defaults retrieve all companies
+   *
+   * > name: partial or full name string to search by. Default is ''
+   *
+   * > minEmploy: search value for minumum employess in company. Default is 1 employee
+   *
+   * > maxEmploy: max number of employees in company. Default is max postgres integer
+   */
+
+  static async find(name='', minEmploy=1, maxEmploy=2147483647){
+    const result = await db.query(`
+                    SELECT  handle,
+                            name,
+                            description,
+                            num_employees AS "numEmployees",
+                            logo_url AS "logoUrl"
+                    FROM companies
+                    WHERE name ILIKE $1
+                    AND num_employees BETWEEN $2 AND $3`,
+                    [`%${name}%`, `${minEmploy}`, `${maxEmploy}`]);
+
+    return result.rows
+  }
+
   /** Given a company handle, return data about company.
    *
    * Returns { handle, name, description, numEmployees, logoUrl, jobs }
@@ -108,13 +134,13 @@ class Company {
         });
     const handleVarIdx = "$" + (values.length + 1);
 
-    const querySql = `UPDATE companies 
-                      SET ${setCols} 
-                      WHERE handle = ${handleVarIdx} 
-                      RETURNING handle, 
-                                name, 
-                                description, 
-                                num_employees AS "numEmployees", 
+    const querySql = `UPDATE companies
+                      SET ${setCols}
+                      WHERE handle = ${handleVarIdx}
+                      RETURNING handle,
+                                name,
+                                description,
+                                num_employees AS "numEmployees",
                                 logo_url AS "logoUrl"`;
     const result = await db.query(querySql, [...values, handle]);
     const company = result.rows[0];

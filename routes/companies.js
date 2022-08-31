@@ -31,10 +31,10 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-
     const company = await Company.create(req.body);
     return res.status(201).json({ company });
-  } catch (err) {
+  }
+  catch (err) {
     return next(err);
   }
 });
@@ -52,9 +52,12 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
-    return res.json({ companies });
-  } catch (err) {
+    const {name, min_emp, max_emp } = req.query;
+
+    const companies = await Company.find(name, min_emp, max_emp)
+    return res.json({companies})
+  }
+  catch (err) {
     return next(err);
   }
 });
@@ -71,7 +74,8 @@ router.get("/:handle", async function (req, res, next) {
   try {
     const company = await Company.get(req.params.handle);
     return res.json({ company });
-  } catch (err) {
+  }
+  catch (err) {
     return next(err);
   }
 });
