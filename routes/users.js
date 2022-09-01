@@ -95,7 +95,6 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-    console.log('Patch route for user - Local user object ====================', res.locals.user )
     if(req.params.username !== res.locals.user.username && !res.locals.user.isAdmin) {
       throw new UnauthorizedError('Only user or admin can alter userdata')
     }
