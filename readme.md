@@ -30,3 +30,13 @@ To run the tests:
     - Extra params don't affect search
     - Partial params return what is intended due to default vals
     - Error if no results found
+
+#### Part 3
+- Created requireAuth middleware by checking res.local.user.isAdmin
+- Added requireAuth to company create, patch and delete routes
+    - Added tests to reflect it working if isAdmin and returning 401 is !isAdmin
+    - Fixed other tests to make sure they are passing
+- Added requireAuth to user create, getall
+    - Fixed and added test to ensure this works correctly
+- Added logic to user patch route so that only the user and admin can alter their info and password
+    - Fixed tests and added test to ensure this works as intended

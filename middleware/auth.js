@@ -52,7 +52,7 @@ function ensureLoggedIn(req, res, next) {
 
 function requireAdmin (req, res, next) {
   try {
-    if (!res.locals.user.isAdmin ) throw new UnauthorizedError('User is not admin.');
+    if (!res.locals.user.isAdmin) throw new UnauthorizedError('User is not admin.');
     return next();
   }
   catch(err){
