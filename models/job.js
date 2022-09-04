@@ -1,12 +1,13 @@
 "use strict";
 
 const db = require("../db");
-const {ForbiddenError}= require('../expressError')
+const {ForbiddenError, NotFoundError, BadRequestError}= require('../expressError')
 
 
 /** Related functions for jobs */
 
 class Job {
+
   /** Create a job and insert into db, return new job data.
    *
    * Data should be { job title, job salary, equity, company handle }
@@ -28,16 +29,116 @@ class Job {
              VALUES ($1, $2, $3, $4)
              RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
           [ data.title, data.salary, data.equity, data.companyHandle ]);
-      let job = result.rows[0];
+        let job = result.rows[0];
 
-      return job;
+        return job;
     }
     catch(err){
-        throw new ForbiddenError('Create job failed')
+        throw new ForbiddenError('Create job failed');
     };
   };
 
+  /** Find one job by id.
+   *
+   * Args (number or number string). Job.get(1) or Job.get('1')
+   * - If no results => 404 error.
+   * - All other args are not valid, an error is thrown.
+   */
+
+  static async get(id){
+    if (id && (typeof(id) === "number" || typeof(id) === "string")){
+        try{
+            const results = await db.query(
+                    `SELECT j.id,
+                        j.title,
+                        j.salary,
+                        j.equity,
+                        j.company_handle AS "companyHandle",
+                        c.name AS "companyName"
+                    FROM jobs j
+                    LEFT JOIN companies AS c ON c.handle = j.company_handle
+                    WHERE id = $1`, [id]
+            )
+            if (results.rows.length === 0) throw new Error;
+            return results.rows[0]
+        }catch(e){
+            throw new NotFoundError('No job found with that id');
+        }
+    } else {
+        throw new BadRequestError('Invalid argument passed to Job.get() method');
+    };
+  };
+
+  static async getAll() {
+    return
+  }
+
+  /** Find jobs based on data passed
+   *
+   * Args:
+   * > No arg. Returns an array of all jobs
+   *
+   * > ID (Number) arg. Returns job by id or throws not found error.
+   *
+   * > If object arg, must receive one or more of the following:
+   * >  - title: "String value to search"
+   * >  - equity: Boolean
+   * >  - minSalary: Number
+   *
+   * Returns an array of one or all of the jobs meeting the criteria
+   */
+  static async find(data){
+        let queryString = `SELECT j.id,
+                                   j.title,
+                                   j.salary,
+                                   j.equity,
+                                   j.company_handle AS "companyHandle",
+                                   c.name AS "companyName"
+                               FROM jobs j
+                               LEFT JOIN companies AS c ON c.handle = j.company_handle`;
+        console.log('typeof data find method', typeof(data))
+
+        const whereStatements = [];
+        const queryVals = [];
+
+        // find all jobs
+        if (!data){
+            const results = await db.query(queryString);
+            return results.rows
+        }
+
+        if (data.equity === true){
+            whereStatements.push('equity > 0');
+        }
+
+        // if (data.title){
+        //     whereStatements.push(`title ILIKE $${}`)
+        // }
+
+        // if (data.minSalary){
+        //     whereStatements.push(``)
+        // }
+  }
+
+  static async delete(id){
+    try{
+        // look for id in db first and throw error if not found
+        const checkId = await db.query(
+            `SELECT id FROM jobs WHERE id = $1`, [id]
+        );
+        if (checkId.rows.length === 0) throw new NotFoundError('Job id not found');
+
+        const result = await db.query(
+            `DELETE FROM jobs WHERE id = $1 RETURNING id, title`, [id]
+        )
+        return result.rows[0];
+    }
+    catch(err){
+        throw new BadRequestError(`Deletion failed. ${err}`);
+    }
+  }
 
 }
+
 
 module.exports = Job;
