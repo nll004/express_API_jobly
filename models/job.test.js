@@ -119,7 +119,7 @@ describe('Job.find method', function(){
     expect(result).toEqual(
       [
         {
-          id: expect.any(Number),
+          id: this.jobs[0].id,
           title: "j1",
           salary: 1000.00,
           equity: "0.1",
@@ -127,7 +127,7 @@ describe('Job.find method', function(){
           companyName: "C1",
         },
         {
-          id: expect.any(Number),
+          id: this.jobs[1].id,
           title: "j2",
           salary: 20001,
           equity: "0.2",
@@ -135,7 +135,7 @@ describe('Job.find method', function(){
           companyName: "C2",
         },
         {
-          id: expect.any(Number),
+          id: this.jobs[2].id,
           title: "j3",
           salary: 100000,
           equity: "0",
@@ -143,7 +143,7 @@ describe('Job.find method', function(){
           companyName: "C1",
         },
         {
-          id: expect.any(Number),
+          id: this.jobs[3].id,
           title: "j4",
           salary: null,
           equity: null,
@@ -151,6 +151,84 @@ describe('Job.find method', function(){
           companyName: "C1",
         },
       ]);
+  });
+
+
+  test("works with min salary", async function () {
+    let jobs = await Job.find({ minSalary: 90000 });
+    expect(jobs).toEqual([
+      {
+        id: this.jobs[2].id,
+        title: "j3",
+        salary: 100000,
+        equity: "0",
+        companyHandle: "c1",
+        companyName: "C1",
+      },
+    ]);
+  });
+
+  test("works with equity", async function () {
+    let jobs = await Job.find({ hasEquity: true });
+    expect(jobs).toEqual([
+      {
+        id: this.jobs[0].id,
+        title: "j1",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1",
+        companyName: "C1",
+      },
+      {
+        id: this.jobs[1].id,
+        title: "j2",
+        salary: 20001,
+        equity: "0.2",
+        companyHandle: "c2",
+        companyName: "C2",
+      },
+    ]);
+  });
+
+  test("works with min salary & equity", async function () {
+    let jobs = await Job.find({ minSalary: 15000, hasEquity: true });
+    expect(jobs).toEqual([
+      {
+        id: this.jobs[1].id,
+        title: "j2",
+        salary: 20001,
+        equity: "0.2",
+        companyHandle: "c2",
+        companyName: "C2",
+      },
+    ]);
+  });
+
+  test("works with name", async function () {
+    let jobs = await Job.find({ title: "j1" });
+    expect(jobs).toEqual([
+      {
+        id: this.jobs[0].id,
+        title: "j1",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1",
+        companyName: "C1",
+      },
+    ]);
+  });
+  test("works with name, equity and minSalary", async function () {
+    let jobs = await Job.find({ title: "j",  minSalary: 15000, hasEquity: true });
+    expect(jobs).toEqual([
+      {
+        id: this.jobs[1].id,
+        title: "j2",
+        salary: 20001,
+        equity: "0.2",
+        companyHandle: "c2",
+        companyName: "C2",
+      },
+    ]);
   });
 });
 

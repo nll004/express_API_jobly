@@ -69,16 +69,11 @@ class Job {
     };
   };
 
-  static async getAll() {
-    return
-  }
 
   /** Find jobs based on data passed
    *
    * Args:
    * > No arg. Returns an array of all jobs
-   *
-   * > ID (Number) arg. Returns job by id or throws not found error.
    *
    * > If object arg, must receive one or more of the following:
    * >  - title: "String value to search"
@@ -87,7 +82,7 @@ class Job {
    *
    * Returns an array of one or all of the jobs meeting the criteria
    */
-  static async find(data){
+    static async find({minSalary, hasEquity, title} = {}){
         let queryString = `SELECT j.id,
                                    j.title,
                                    j.salary,
@@ -96,29 +91,34 @@ class Job {
                                    c.name AS "companyName"
                                FROM jobs j
                                LEFT JOIN companies AS c ON c.handle = j.company_handle`;
-        console.log('typeof data find method', typeof(data))
-
         const whereStatements = [];
         const queryVals = [];
 
-        // find all jobs
-        if (!data){
-            const results = await db.query(queryString);
-            return results.rows
+        // add search criteria to where statement only if included in data argument
+        if (minSalary !== undefined) {
+            queryVals.push(minSalary);
+            whereStatements.push(`salary >= $${queryVals.length}`);
         }
 
-        if (data.equity === true){
-            whereStatements.push('equity > 0');
+        if (hasEquity === true) {
+            whereStatements.push(`equity > 0`);
         }
 
-        // if (data.title){
-        //     whereStatements.push(`title ILIKE $${}`)
-        // }
+        if (title !== undefined) {
+            queryVals.push(`%${title}%`);
+            whereStatements.push(`title ILIKE $${queryVals.length}`);
+        }
 
-        // if (data.minSalary){
-        //     whereStatements.push(``)
-        // }
-  }
+        if (whereStatements.length > 0) {
+            queryString += " WHERE " + whereStatements.join(" AND ");
+        }
+        queryString += " ORDER BY title";
+
+        const jobsRes = await db.query(queryString, queryVals);
+        return jobsRes.rows;
+  };
+
+  /** Delete job if found or 404 */
 
   static async delete(id){
     try{
