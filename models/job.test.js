@@ -72,7 +72,7 @@ describe('Get job by id', function(){
   test('Job.get(id) returns one job', async function(){
     const testJobs = await getTestJobs();
     const result = await Job.get(testJobs[0].id);
-    console.log(result)
+
     expect(result).toEqual(
         { "id": testJobs[0].id,
           "companyHandle": "c1",
@@ -234,9 +234,42 @@ describe('Job.find method', function(){
 
 /*********************************************************************** update */
 
-// describe('Job.update method', function(){
+describe('Job.update method', function(){
+    let updateData = {
+      title: "New",
+      salary: 500,
+      equity: "0.5",
+    };
 
-// });
+    test("works", async function () {
+      let job = await Job.update(this.jobs[0].id, updateData);
+      expect(job).toEqual({
+        id: this.jobs[0].id,
+        companyHandle: "c1",
+        ...updateData,
+      });
+    });
+
+    test("not found if no such job", async function () {
+      try {
+        await Job.update(0, {
+          title: "test",
+        });
+        fail();
+      } catch (err) {
+        expect(err instanceof NotFoundError).toBeTruthy();
+      }
+    });
+
+    test("bad request with no data", async function () {
+      try {
+        await Job.update(this.jobs[0].id, {});
+        fail();
+      } catch (err) {
+        expect(err instanceof BadRequestError).toBeTruthy();
+      }
+    });
+  });
 
 /*********************************************************************** delete */
 
