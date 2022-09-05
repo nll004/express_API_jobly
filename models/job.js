@@ -46,29 +46,29 @@ class Job {
    * - All other args are not valid, an error is thrown.
    */
 
-  static async get(id){
-    if (id && (typeof(id) === "number" || typeof(id) === "string")){
-        try{
-            const results = await db.query(
-                    `SELECT j.id,
-                        j.title,
-                        j.salary,
-                        j.equity,
-                        j.company_handle AS "companyHandle",
-                        c.name AS "companyName"
-                    FROM jobs j
-                    LEFT JOIN companies AS c ON c.handle = j.company_handle
-                    WHERE id = $1`, [id]
-            )
-            if (results.rows.length === 0) throw new Error;
-            return results.rows[0]
-        }catch(e){
-            throw new NotFoundError('No job found with that id');
-        }
-    } else {
-        throw new BadRequestError('Invalid argument passed to Job.get() method');
+    static async get(id){
+        if (id && (typeof(id) === "number" || typeof(id) === "string")){
+            try{
+                const results = await db.query(
+                        `SELECT j.id,
+                            j.title,
+                            j.salary,
+                            j.equity,
+                            j.company_handle AS "companyHandle",
+                            c.name AS "companyName"
+                        FROM jobs j
+                        LEFT JOIN companies AS c ON c.handle = j.company_handle
+                        WHERE id = $1`, [id]
+                )
+                if (results.rows.length === 0) throw new Error;
+                return results.rows[0]
+            } catch(e){
+                throw new NotFoundError('No job found with that id');
+            }
+        } else {
+            throw new BadRequestError('Invalid argument passed to Job.get() method');
+        };
     };
-  };
 
 
   /** Find jobs based on data passed
@@ -117,7 +117,7 @@ class Job {
 
         const jobsRes = await db.query(queryString, queryVals);
         return jobsRes.rows;
-  };
+    };
 
   /** Update job data with `data`.
    *
@@ -131,48 +131,48 @@ class Job {
    * Throws NotFoundError if not found.
    */
 
-   static async update(id, data) {
-    const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {});
-    const idVarIdx = "$" + (values.length + 1);
+    static async update(id, data) {
+        const { setCols, values } = sqlForPartialUpdate(
+            data,
+            {});
+        const idVarIdx = "$" + (values.length + 1);
 
-    const querySql = `UPDATE jobs
-                      SET ${setCols}
-                      WHERE id = ${idVarIdx}
-                      RETURNING id,
-                                title,
-                                salary,
-                                equity,
-                                company_handle AS "companyHandle"`;
-    const result = await db.query(querySql, [...values, id]);
-    const job = result.rows[0];
+        const querySql = `UPDATE jobs
+                          SET ${setCols}
+                          WHERE id = ${idVarIdx}
+                          RETURNING id,
+                                    title,
+                                    salary,
+                                    equity,
+                                    company_handle AS "companyHandle"`;
+        const result = await db.query(querySql, [...values, id]);
+        const job = result.rows[0];
 
-    if (!job) throw new NotFoundError(`No job: ${id}`);
+        console.log("Job.update(id)", job)
+        if (job.length === 0) throw new NotFoundError(`No job found with id ${id}`);
 
-    return job;
-  }
-
-  /** Delete job using id. If id is not found in database, throw 404 error */
-
-  static async delete(id){
-    try{
-        // look for id in db first and throw error if not found
-        const checkId = await db.query(
-            `SELECT id FROM jobs WHERE id = $1`, [id]
-        );
-        if (checkId.rows.length === 0) throw new NotFoundError('Job id not found');
-
-        const result = await db.query(
-            `DELETE FROM jobs WHERE id = $1 RETURNING id, title`, [id]
-        )
-        return result.rows[0];
+        return job;
     }
-    catch(err){
-        throw new BadRequestError(`Deletion failed. ${err}`);
-    }
-  }
 
+    /** Delete job using id. If id is not found in database, throw 404 error */
+
+    static async delete(id){
+        try{
+            // look for id in db first and throw error if not found
+            const checkId = await db.query(
+                `SELECT id FROM jobs WHERE id = $1`, [id]
+            );
+            if (checkId.rows.length === 0) throw new Error;
+
+            const result = await db.query(
+                `DELETE FROM jobs WHERE id = $1 RETURNING id, title`, [id]
+            )
+            return result.rows[0];
+        }
+        catch(err){
+            throw new NotFoundError(`Deletion failed`)
+        }
+    }
 }
 
 
