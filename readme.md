@@ -36,4 +36,4 @@ Given a working API, I was tasked with adding test and documentation for some ex
 - Added API routes to create, update, search and delete jobs
     - Added JSON schemas to validate data sent to routes.
     - Added integration tests for all routes.
-- Changed company handle
+- Changed get company by handle route to respond with company info and all jobs for that company

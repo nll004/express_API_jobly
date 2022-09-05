@@ -289,7 +289,7 @@ describe('Job.delete method', function(){
         await Job.delete('1');
         fail();
     }catch(err){
-        expect(err instanceof BadRequestError).toBeTruthy();
+        expect(err instanceof NotFoundError).toBeTruthy();
     };
   });
 });

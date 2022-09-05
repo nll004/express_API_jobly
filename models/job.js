@@ -83,7 +83,7 @@ class Job {
    *
    * Returns an array of one or all of the jobs meeting the criteria
    */
-    static async find({minSalary, hasEquity, title} = {}){
+    static async find({minSalary, hasEquity, title, companyHandle} = {}){
         let queryString = `SELECT j.id,
                                    j.title,
                                    j.salary,
@@ -108,6 +108,12 @@ class Job {
         if (title !== undefined) {
             queryVals.push(`%${title}%`);
             whereStatements.push(`title ILIKE $${queryVals.length}`);
+        }
+
+        if (companyHandle !== undefined) {
+            console.log("Job.find - companyHandle:", companyHandle);
+            queryVals.push(companyHandle);
+            whereStatements.push(`company_handle = $${queryVals.length}`);
         }
 
         if (whereStatements.length > 0) {
@@ -167,7 +173,7 @@ class Job {
             const checkId = await db.query(
                 `SELECT id FROM jobs WHERE id = $1`, [id]
             );
-            if (checkId.rows.length === 0) throw new Error;
+            if (checkId.rows.length === 0) throw new NotFoundError();
 
             const result = await db.query(
                 `DELETE FROM jobs WHERE id = $1 RETURNING id, title`, [id]
@@ -175,7 +181,8 @@ class Job {
             return result.rows[0];
         }
         catch(err){
-            throw new NotFoundError(`Deletion failed`)
+            if (err instanceof NotFoundError) throw new NotFoundError(`Deletion failed. Job id not found.`);
+            else throw new BadRequestError(`Deletion failed. ${err}`);
         }
     }
 }
