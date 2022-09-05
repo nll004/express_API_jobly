@@ -1,23 +1,16 @@
 const { BadRequestError } = require("../expressError");
 
-/**
- * Takes 2 objects and converts into columns/values for SQL query.
+/** Converts arguements into columns/values to use in SQL queries.
  *
- * - dataToUpdate: takes JS object with keys:values to update in database. Error if no key
+ * Args:
+ * @arg dataToUpdate {object} - required - Key:values to update in database.
+ * >   Ex: { firstName: "Jessie", lastName: "Jones"}
  *
- *    Ex: { firstName: "Jessie", lastName: "Jones"}
+ * @arg jsToSql {object} - Key:values with JS variable names as keys and SQL variable names as values.
+ * >   Ex: { firstName: "first_name", lastName: "last_name"}
  *
- * - jsToSql: takes object with JS variable names as keys and SQL variable names as values to convert
- *
- *    Ex: { firstName: "first_name", lastName: "last_name"}
- *
- * returns {
- *
- *      setCols: '"first_name"=$1, "last_name"=$2',
- *
- *      values: ["Jessie", "Jones"]
- *
- * }
+ * @returns {object}
+ * { setCols: "first_name"=$1, "last_name"=$2', values: ["Jessie", "Jones"] }
  */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {

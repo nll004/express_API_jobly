@@ -142,11 +142,11 @@ class Job {
             const { setCols, values } = sqlForPartialUpdate(
                 data,
                 {});
-            const idVarIdx = "$" + (values.length + 1);
+            const valPlaceholder = "$" + (values.length + 1);
 
             const querySql = `UPDATE jobs
                               SET ${setCols}
-                              WHERE id = ${idVarIdx}
+                              WHERE id = ${valPlaceholder}
                               RETURNING id,
                                         title,
                                         salary,
@@ -165,11 +165,11 @@ class Job {
         }
     }
 
-    /** Delete job using id. If id is not found in database, throw 404 error */
+    /** Delete job using id. If job id does not exist, throw 404 error */
 
     static async delete(id){
         try{
-            // look for id in db first and throw error if not found
+            // look for job id first and throw error if not found
             const checkId = await db.query(
                 `SELECT id FROM jobs WHERE id = $1`, [id]
             );
