@@ -102,7 +102,7 @@ router.get("/:id", async function (req, res, next) {
 });
 
 
-/** PATCH /[jobId]  { fld1, fld2, ... } => { job }
+/** PATCH /jobs/:id
  *
  * Data can include: { title, salary, equity }
  *
@@ -112,18 +112,19 @@ router.get("/:id", async function (req, res, next) {
  */
 
 router.patch("/:id", requireAdmin, async function (req, res, next) {
-  try {
-    const validator = jsonschema.validate(req.body, editJobSchema);
-    if (!validator.valid) {
-      const errs = validator.errors.map(e => e.stack);
-      throw new BadRequestError(errs);
+    try {
+        const jsonData = jsonschema.validate(req.body, editJobSchema);
+        if (!jsonData.valid) {
+            const errs = jsonData.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        }
+        const job = await Job.update(req.params.id, req.body);
+        return res.json({ job });
     }
-
-    const job = await Job.update(req.params.id, req.body);
-    return res.json({ job });
-  } catch (err) {
-    return next(err);
-  }
+    catch (err) {
+        console.log(err)
+        return next(err);
+    }
 });
 
 /** DELETE /jobs/:id
@@ -136,14 +137,13 @@ router.patch("/:id", requireAdmin, async function (req, res, next) {
  */
 
 router.delete("/:id", ensureLoggedIn, requireAdmin, async function (req, res, next) {
-  try {
-    const delResult = await Job.delete(req.params.id);
-    return res.json({ deleted: delResult });
-  }
-  catch (err) {
-    console.log(err)
-    return next(err);
-  }
+    try {
+        const delResult = await Job.delete(req.params.id);
+        return res.json({ deleted: delResult });
+    }
+    catch (err) {
+        return next(err);
+    }
 });
 
 

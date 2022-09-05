@@ -132,26 +132,31 @@ class Job {
    */
 
     static async update(id, data) {
-        const { setCols, values } = sqlForPartialUpdate(
-            data,
-            {});
-        const idVarIdx = "$" + (values.length + 1);
+        try{
+            const { setCols, values } = sqlForPartialUpdate(
+                data,
+                {});
+            const idVarIdx = "$" + (values.length + 1);
 
-        const querySql = `UPDATE jobs
-                          SET ${setCols}
-                          WHERE id = ${idVarIdx}
-                          RETURNING id,
-                                    title,
-                                    salary,
-                                    equity,
-                                    company_handle AS "companyHandle"`;
-        const result = await db.query(querySql, [...values, id]);
-        const job = result.rows[0];
+            const querySql = `UPDATE jobs
+                              SET ${setCols}
+                              WHERE id = ${idVarIdx}
+                              RETURNING id,
+                                        title,
+                                        salary,
+                                        equity,
+                                        company_handle AS "companyHandle"`;
+            const result = await db.query(querySql, [...values, id]);
+            const job = result.rows[0];
 
-        console.log("Job.update(id)", job)
-        if (job.length === 0) throw new NotFoundError(`No job found with id ${id}`);
+            if (!job) throw new NotFoundError();
 
-        return job;
+            return job;
+        }
+        catch(err){
+            if (err instanceof NotFoundError) throw new NotFoundError(`No job found with id ${id}`);
+            else throw new BadRequestError(`Update failed. ${err}`);
+        }
     }
 
     /** Delete job using id. If id is not found in database, throw 404 error */

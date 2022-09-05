@@ -231,12 +231,10 @@ describe("PATCH /jobs/:id", function () {
   });
 
   test("return not found if job id is invalid", async function () {
-    console.log('testing invalid id')
-
-    const resp = await request(app)
+      const resp = await request(app)
         .patch(`/jobs/0`)
         .send({
-          salary: 1000000000000,
+          salary: 1000000,
         })
         .set("authorization", `Bearer ${u3Token}`);
     expect(resp.statusCode).toEqual(404);
