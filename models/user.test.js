@@ -12,14 +12,18 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  getTestJobs,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
-beforeEach(commonBeforeEach);
+beforeEach( async function() {
+  commonBeforeEach();
+  this.jobs = await getTestJobs(); // alternate way to make a variable to use with tests
+});
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-/************************************** authenticate */
+/******************************************************************** authenticate */
 
 describe("authenticate", function () {
   test("works", async function () {
@@ -52,7 +56,7 @@ describe("authenticate", function () {
   });
 });
 
-/************************************** register */
+/********************************************************************* register */
 
 describe("register", function () {
   const newUser = {
@@ -105,7 +109,7 @@ describe("register", function () {
   });
 });
 
-/************************************** findAll */
+/******************************************************************* findAll */
 
 describe("findAll", function () {
   test("works", async function () {
@@ -129,7 +133,7 @@ describe("findAll", function () {
   });
 });
 
-/************************************** get */
+/******************************************************************** get */
 
 describe("get", function () {
   test("works", async function () {
@@ -153,7 +157,7 @@ describe("get", function () {
   });
 });
 
-/************************************** update */
+/********************************************************************** update */
 
 describe("update", function () {
   const updateData = {
@@ -209,7 +213,52 @@ describe("update", function () {
   });
 });
 
-/************************************** remove */
+/******************************************************************** apply */
+
+describe('apply to job', function(){
+  // apply works
+  // apply fails
+  // non unique application- they already applied => error?
+
+  test("works", async function () {
+    await User.applyToJob("u1", this.jobs[0].id);
+
+    const res = await db.query(
+        "SELECT * FROM applications WHERE job_id=$1", [this.jobs[0].id]);
+    expect(res.rows).toEqual([{
+      job_id: this.jobs[0].id,
+      username: "u1",
+    }]);
+  });
+
+  test('reappling to the same job should throw error due to unique constraints', async function(){
+    try {
+      await User.applyToJob('u1', this.jobs[0].id);
+    } catch(e){
+      expect(e instanceof BadRequestError).toBeTruthy();
+    }
+  })
+
+  test("not found if no such job", async function () {
+    try {
+      await User.applyToJob("u1", 0);
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
+  test("not found if no such user", async function () {
+    try {
+      await User.applyToJob("invalid-user", this.jobs[0].id);
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
+
+/******************************************************************** remove */
 
 describe("remove", function () {
   test("works", async function () {

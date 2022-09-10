@@ -15,12 +15,17 @@ const {
   u3Token
 } = require("./_testCommon");
 
+const { getTestJobs } = require('../models/_testCommon')
+
 beforeAll(commonBeforeAll);
-beforeEach(commonBeforeEach);
+beforeEach( async function() {
+  commonBeforeEach();
+  this.jobs = await getTestJobs();
+});
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-/************************************** POST /users */
+/******************************************************************************* POST /users */
 
 describe("POST /users", function () {
   test("admin can create user with non admin status", async function () {
@@ -126,7 +131,7 @@ describe("POST /users", function () {
   });
 });
 
-/************************************** GET /users */
+/******************************************************************************** GET /users */
 
 describe("GET /users", function () {
   test("works for admin users", async function () {
@@ -185,7 +190,7 @@ describe("GET /users", function () {
   });
 });
 
-/************************************** GET /users/:username */
+/****************************************************************************** GET /users/:username */
 
 describe("GET /users/:username", function () {
   test("works for users", async function () {
@@ -217,7 +222,7 @@ describe("GET /users/:username", function () {
   });
 });
 
-/************************************** PATCH /users/:username */
+/******************************************************************** PATCH /users/:username */
 
 describe("PATCH /users/:username", () => {
   test("works for users", async function () {
@@ -318,7 +323,7 @@ describe("PATCH /users/:username", () => {
   })
 });
 
-/************************************** DELETE /users/:username */
+/************************************************************************* DELETE /users/:username */
 
 describe("DELETE /users/:username", function () {
   test("works for users", async function () {
@@ -338,6 +343,58 @@ describe("DELETE /users/:username", function () {
     const resp = await request(app)
         .delete(`/users/nope`)
         .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+});
+
+/******************************************************************* POST /users/:username/jobs/:id */
+
+describe("POST /users/:username/jobs/:id", function () {
+  test("works for admin", async function () {
+    const resp = await request(app)
+        .post(`/users/u1/jobs/${this.jobs[0].id}`)
+        .set("authorization", `Bearer ${u3Token}`);
+    expect(resp.body).toEqual({ applied: this.jobs[0].id });
+  });
+
+  test("works for same user", async function () {
+    const resp = await request(app)
+        .post(`/users/u1/jobs/${this.jobs[0].id}`)
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ applied: this.jobs[0].id });
+  });
+
+  test("unauth for others", async function () {
+    const resp = await request(app)
+        .post(`/users/u2/jobs/${this.jobs[0].id}`)
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+        .post(`/users/u1/jobs/${this.jobs[0].id}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found for no such username", async function () {
+    const resp = await request(app)
+        .post(`/users/nope/jobs/${this.jobs[0].id}`)
+        .set("authorization", `Bearer ${u3Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("not found for no such job", async function () {
+    const resp = await request(app)
+        .post(`/users/u1/jobs/0`)
+        .set("authorization", `Bearer ${u3Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("bad request invalid job id", async function () {
+    const resp = await request(app)
+        .post(`/users/u1/jobs/0`)
+        .set("authorization", `Bearer ${u3Token}`);
     expect(resp.statusCode).toEqual(404);
   });
 });

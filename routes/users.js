@@ -6,11 +6,12 @@ const jsonschema = require("jsonschema");
 
 const express = require("express");
 const { ensureLoggedIn, requireAdmin } = require("../middleware/auth");
-const { BadRequestError, UnauthorizedError } = require("../expressError");
+const { BadRequestError, UnauthorizedError, NotFoundError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
+const Job = require("../models/job");
 
 const router = express.Router();
 
@@ -120,6 +121,30 @@ router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
     return next(err);
   }
 });
+
+/** POST /users/:username/jobs/:id
+ *
+ * Authorization: login
+ */
+
+router.post('/:username/jobs/:id', ensureLoggedIn, async function( req, res, next){
+  try{
+    if(req.params.username !== res.locals.user.username && !res.locals.user.isAdmin) {
+      throw new UnauthorizedError('Only user or admin can alter userdata');
+    };
+
+    // check for user and job id. If not found error will be thrown.
+    User.get(req.params.username);
+    Job.get(req.params.id);
+
+    const application = await User.applyToJob(req.params.username, req.params.id);
+    return res.json({ "applied" : application.job_id });
+  }
+  catch(err){
+    if(err instanceof NotFoundError) return next(NotFoundError(`${err}`));
+    return next(err);
+  }
+})
 
 
 module.exports = router;

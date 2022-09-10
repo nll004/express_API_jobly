@@ -3,6 +3,7 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const { sqlForPartialUpdate } = require("../helpers/sql");
+const Job = require('./job');
 const {
   NotFoundError,
   BadRequestError,
@@ -173,9 +174,9 @@ class User {
         });
     const usernameVarIdx = "$" + (values.length + 1);
 
-    const querySql = `UPDATE users 
-                      SET ${setCols} 
-                      WHERE username = ${usernameVarIdx} 
+    const querySql = `UPDATE users
+                      SET ${setCols}
+                      WHERE username = ${usernameVarIdx}
                       RETURNING username,
                                 first_name AS "firstName",
                                 last_name AS "lastName",
@@ -188,6 +189,35 @@ class User {
 
     delete user.password;
     return user;
+  }
+
+  /** Apply for job.
+   *
+   * Given a username and job id, store application in database.
+   */
+
+  static async applyToJob(username, jobId){
+    try{
+      // User.get(username);    // throws error in method and doesn't catch here
+      // Job.get(jobId);
+      const res1 = await db.query(`SELECT username FROM users WHERE username = $1`, [username]);
+      if(res1.rows.length === 0) throw new NotFoundError('Username not found');
+
+      const res2 = await db.query(`SELECT id FROM jobs WHERE id = $1`, [jobId]);
+      if(res2.rows.length === 0) throw new NotFoundError('Job id not found');
+
+      const result = await db.query(
+        `INSERT INTO applications
+         (username, job_id)
+         VALUES ($1, $2)
+         RETURNING username, job_id`,
+         [username, jobId]
+         )
+      return result.rows[0]
+    }
+    catch(err){
+      throw new BadRequestError(`User.applyToJob failed. ${err}`);
+    }
   }
 
   /** Delete given user from database; returns undefined. */

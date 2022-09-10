@@ -7,7 +7,8 @@ const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
-  commonAfterAll
+  commonAfterAll,
+  getTestJobs,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -18,10 +19,6 @@ beforeEach( async function() {
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-async function getTestJobs(){
-    const jobRes = await db.query(`SELECT * FROM jobs`)
-    return jobRes.rows
-}
 
 /**************************************************************** create */
 describe("create job method", function () {
@@ -106,7 +103,7 @@ describe('Get job by id', function(){
       await Job.get(undefined);
       fail();
     } catch (err) {
-      expect(err instanceof BadRequestError ).toBeTruthy();
+      expect(err instanceof BadRequestError).toBeTruthy();
     };
   });
 })

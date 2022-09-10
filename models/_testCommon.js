@@ -50,10 +50,15 @@ async function commonAfterAll() {
   await db.end();
 }
 
+async function getTestJobs(){
+  const jobRes = await db.query(`SELECT * FROM jobs`)
+  return jobRes.rows
+}
 
 module.exports = {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  getTestJobs,
 };
