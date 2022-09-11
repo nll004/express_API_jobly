@@ -56,7 +56,8 @@ router.get("/", ensureLoggedIn, requireAdmin, async function (req, res, next) {
   try {
     const users = await User.findAll();
     return res.json({ users });
-  } catch (err) {
+  }
+  catch (err) {
     return next(err);
   }
 });
@@ -73,7 +74,8 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
   try {
     const user = await User.get(req.params.username);
     return res.json({ user });
-  } catch (err) {
+  }
+  catch (err) {
     return next(err);
   }
 });
@@ -117,7 +119,8 @@ router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
   try {
     await User.remove(req.params.username);
     return res.json({ deleted: req.params.username });
-  } catch (err) {
+  }
+  catch (err) {
     return next(err);
   }
 });
@@ -134,14 +137,13 @@ router.post('/:username/jobs/:id', ensureLoggedIn, async function( req, res, nex
     };
 
     // check for user and job id. If not found error will be thrown.
-    User.get(req.params.username);
-    Job.get(req.params.id);
+    await User.get(req.params.username);
+    await Job.get(req.params.id);
 
     const application = await User.applyToJob(req.params.username, req.params.id);
     return res.json({ "applied" : application.job_id });
   }
   catch(err){
-    if(err instanceof NotFoundError) return next(NotFoundError(`${err}`));
     return next(err);
   }
 })

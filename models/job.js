@@ -95,7 +95,7 @@ class Job {
         const whereStatements = [];
         const queryVals = [];
 
-        // add search criteria to where statement only if included in data argument
+        // add search criteria to WHERE statement only if included in data argument
         if (minSalary !== undefined) {
             queryVals.push(minSalary);
             whereStatements.push(`salary >= $${queryVals.length}`);
@@ -111,7 +111,6 @@ class Job {
         }
 
         if (companyHandle !== undefined) {
-            console.log("Job.find - companyHandle:", companyHandle);
             queryVals.push(companyHandle);
             whereStatements.push(`company_handle = $${queryVals.length}`);
         }

@@ -23,10 +23,3 @@ describe('unittest for sqlForPartialUpdate function', function() {
             .toThrow(BadRequestError);
     })
 })
-
-// already being tested in companies test route:
-// Error code. Works from route.
-
-
-// no keys throws error
-// does it actually change info in database?

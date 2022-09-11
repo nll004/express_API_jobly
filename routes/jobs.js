@@ -122,7 +122,6 @@ router.patch("/:id", requireAdmin, async function (req, res, next) {
         return res.json({ job });
     }
     catch (err) {
-        console.log(err)
         return next(err);
     }
 });
