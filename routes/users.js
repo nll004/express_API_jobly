@@ -5,7 +5,7 @@
 const jsonschema = require("jsonschema");
 
 const express = require("express");
-const { ensureLoggedIn, requireAdmin } = require("../middleware/auth");
+const { ensureLoggedIn, requireAdmin, checkCurrUserOrAdmin } = require("../middleware/auth");
 const { BadRequestError, UnauthorizedError, NotFoundError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
@@ -91,16 +91,14 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: login
  **/
 
-router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
+router.patch("/:username", ensureLoggedIn, checkCurrUserOrAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, userUpdateSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-    if(req.params.username !== res.locals.user.username && !res.locals.user.isAdmin) {
-      throw new UnauthorizedError('Only user or admin can alter userdata')
-    }
+
     const user = await User.update(req.params.username, req.body);
     return res.json({ user });
   }
@@ -130,12 +128,8 @@ router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
  * Authorization: login
  */
 
-router.post('/:username/jobs/:id', ensureLoggedIn, async function( req, res, next){
+router.post('/:username/jobs/:id', ensureLoggedIn, checkCurrUserOrAdmin, async function( req, res, next){
   try{
-    if(req.params.username !== res.locals.user.username && !res.locals.user.isAdmin) {
-      throw new UnauthorizedError('Only user or admin can alter userdata');
-    };
-
     // check for user and job id. If not found error will be thrown.
     await User.get(req.params.username);
     await Job.get(req.params.id);

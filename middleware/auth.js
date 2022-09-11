@@ -60,9 +60,21 @@ function requireAdmin (req, res, next) {
   }
 }
 
+function checkCurrUserOrAdmin (req, res, next) {
+  try{
+    if(req.params.username !== res.locals.user.username && !res.locals.user.isAdmin) {
+      throw new UnauthorizedError('Only user or admin can alter userdata');
+    }
+    return next();
+  }
+  catch(err){
+    return next(err);
+  }
+}
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  requireAdmin
+  requireAdmin,
+  checkCurrUserOrAdmin
 };

@@ -198,13 +198,8 @@ class User {
 
   static async applyToJob(username, jobId){
     try{
-      // User.get(username);    // throws error in method and doesn't catch here
-      // Job.get(jobId);
-      const res1 = await db.query(`SELECT username FROM users WHERE username = $1`, [username]);
-      if(res1.rows.length === 0) throw new NotFoundError('Username not found');
-
-      const res2 = await db.query(`SELECT id FROM jobs WHERE id = $1`, [jobId]);
-      if(res2.rows.length === 0) throw new NotFoundError('Job id not found');
+      await User.get(username);
+      await Job.get(jobId);
 
       const result = await db.query(
         `INSERT INTO applications
