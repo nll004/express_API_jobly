@@ -43,3 +43,8 @@ Given a working API, I was tasked with adding test and documentation for some ex
     - Added unittests for new method
 - Added a POST new route for applying to jobs
     - Added integration tests
+    
+    
+
+[![HitCount](https://hits.dwyl.com/nll004/express_API_jobly.svg?style=flat-square)](http://hits.dwyl.com/nll004/express_API_jobly)
+
