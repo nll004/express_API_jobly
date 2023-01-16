@@ -1,12 +1,12 @@
 # Jobly - Cummulative Project
 Springboard Software Engineering Bootcamp - Cohort Jan 2022
-Project completion date 9/2/22
+
+Project start Sept. 2022
 
 ## Assignment
-Given a working API, I was tasked with adding test and documentation for some existing functions then asked to introduce several new features and endpoints.
+Given a working API, I was tasked with adding test and documentation for some existing functions then asked to introduce several new features and endpoints. 
 
-## Programs Used
-
+## Technologies Used
 - Node.js
 - Express.js
 - PG database driver
